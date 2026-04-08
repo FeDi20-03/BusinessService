@@ -1,0 +1,103 @@
+{
+  "applications": ["TuniSalesGateway", "BusinessService"],
+  "changelogDate": "20260304094138",
+  "clientRootFolder": "BusinessService",
+  "databaseType": "sql",
+  "dto": "mapstruct",
+  "embedded": false,
+  "entityTableName": "client",
+  "fields": [
+    {
+      "fieldName": "tenantId",
+      "fieldType": "Long",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "name",
+      "fieldType": "String",
+      "fieldValidateRules": ["required", "maxlength"],
+      "fieldValidateRulesMaxlength": "255"
+    },
+    {
+      "fieldName": "taxId",
+      "fieldType": "String",
+      "fieldValidateRules": ["unique", "maxlength"],
+      "fieldValidateRulesMaxlength": "50"
+    },
+    {
+      "fieldName": "clientType",
+      "fieldType": "ClientType",
+      "fieldValidateRules": ["required"],
+      "fieldValues": "NATIONAL_DISTRIBUTOR,REGIONAL_WHOLESALER,INDEPENDENT_POS,TELECOM_OPERATOR"
+    },
+    {
+      "fieldName": "creditLimit",
+      "fieldType": "BigDecimal",
+      "fieldValidateRules": ["min"],
+      "fieldValidateRulesMin": "0"
+    },
+    {
+      "fieldName": "creditUsed",
+      "fieldType": "BigDecimal",
+      "fieldValidateRules": ["min"],
+      "fieldValidateRulesMin": "0"
+    },
+    {
+      "fieldName": "paymentTermsDays",
+      "fieldType": "Integer",
+      "fieldValidateRules": ["min"],
+      "fieldValidateRulesMin": "0"
+    },
+    {
+      "fieldName": "status",
+      "fieldType": "ClientStatus",
+      "fieldValidateRules": ["required"],
+      "fieldValues": "ACTIVE,INACTIVE,SUSPENDED,CHURN_RISK"
+    },
+    {
+      "fieldName": "lastOrderAt",
+      "fieldType": "ZonedDateTime"
+    },
+    {
+      "fieldName": "isDeleted",
+      "fieldType": "Boolean",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "createdAt",
+      "fieldType": "ZonedDateTime",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "updatedAt",
+      "fieldType": "ZonedDateTime"
+    }
+  ],
+  "fluentMethods": true,
+  "jpaMetamodelFiltering": true,
+  "microserviceName": "BusinessService",
+  "name": "Client",
+  "pagination": "pagination",
+  "readOnly": false,
+  "relationships": [
+    {
+      "otherEntityName": "clientContact",
+      "otherEntityRelationshipName": "client",
+      "relationshipName": "contacts",
+      "relationshipType": "one-to-many"
+    },
+    {
+      "otherEntityName": "priceList",
+      "otherEntityRelationshipName": "client",
+      "relationshipName": "priceLists",
+      "relationshipType": "one-to-many"
+    },
+    {
+      "otherEntityName": "order",
+      "otherEntityRelationshipName": "client",
+      "relationshipName": "orders",
+      "relationshipType": "one-to-many"
+    }
+  ],
+  "service": "serviceClass"
+}

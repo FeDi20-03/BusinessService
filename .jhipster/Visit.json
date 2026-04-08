@@ -1,0 +1,80 @@
+{
+  "applications": ["TuniSalesGateway", "BusinessService"],
+  "changelogDate": "20260304095138",
+  "clientRootFolder": "BusinessService",
+  "databaseType": "sql",
+  "dto": "mapstruct",
+  "embedded": false,
+  "entityTableName": "visit",
+  "fields": [
+    {
+      "fieldName": "visitOrder",
+      "fieldType": "Integer",
+      "fieldValidateRules": ["required", "min"],
+      "fieldValidateRulesMin": "1"
+    },
+    {
+      "fieldName": "objective",
+      "fieldType": "VisitObjective",
+      "fieldValidateRules": ["required"],
+      "fieldValues": "SALE,PROSPECTING,AUDIT,COLLECTION,SUPPORT"
+    },
+    {
+      "fieldName": "status",
+      "fieldType": "VisitStatus",
+      "fieldValidateRules": ["required"],
+      "fieldValues": "PLANNED,IN_PROGRESS,COMPLETED,MISSED,CANCELLED"
+    },
+    {
+      "fieldName": "latitude",
+      "fieldType": "BigDecimal"
+    },
+    {
+      "fieldName": "longitude",
+      "fieldType": "BigDecimal"
+    },
+    {
+      "fieldName": "checkinAt",
+      "fieldType": "ZonedDateTime"
+    },
+    {
+      "fieldName": "checkoutAt",
+      "fieldType": "ZonedDateTime"
+    },
+    {
+      "fieldName": "notes",
+      "fieldType": "String",
+      "fieldValidateRules": ["maxlength"],
+      "fieldValidateRulesMaxlength": "2000"
+    },
+    {
+      "fieldName": "createdAt",
+      "fieldType": "ZonedDateTime",
+      "fieldValidateRules": ["required"]
+    }
+  ],
+  "fluentMethods": true,
+  "jpaMetamodelFiltering": true,
+  "microserviceName": "BusinessService",
+  "name": "Visit",
+  "pagination": "pagination",
+  "readOnly": false,
+  "relationships": [
+    {
+      "otherEntityField": "name",
+      "otherEntityName": "client",
+      "relationshipName": "client",
+      "relationshipType": "many-to-one",
+      "relationshipValidateRules": "required"
+    },
+    {
+      "otherEntityField": "title",
+      "otherEntityName": "mission",
+      "otherEntityRelationshipName": "visits",
+      "relationshipName": "mission",
+      "relationshipType": "many-to-one",
+      "relationshipValidateRules": "required"
+    }
+  ],
+  "service": "serviceClass"
+}

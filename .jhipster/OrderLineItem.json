@@ -1,0 +1,43 @@
+{
+  "applications": ["TuniSalesGateway", "BusinessService"],
+  "changelogDate": "20260304094838",
+  "clientRootFolder": "BusinessService",
+  "databaseType": "sql",
+  "dto": "mapstruct",
+  "embedded": false,
+  "entityTableName": "order_line_item",
+  "fields": [
+    {
+      "fieldName": "stockItemId",
+      "fieldType": "Long",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "stockItemImei",
+      "fieldType": "String",
+      "fieldValidateRules": ["maxlength"],
+      "fieldValidateRulesMaxlength": "15"
+    },
+    {
+      "fieldName": "assignedAt",
+      "fieldType": "ZonedDateTime",
+      "fieldValidateRules": ["required"]
+    }
+  ],
+  "fluentMethods": true,
+  "jpaMetamodelFiltering": false,
+  "microserviceName": "BusinessService",
+  "name": "OrderLineItem",
+  "pagination": "no",
+  "readOnly": false,
+  "relationships": [
+    {
+      "otherEntityName": "orderLine",
+      "otherEntityRelationshipName": "orderLineItems",
+      "relationshipName": "orderLine",
+      "relationshipType": "many-to-one",
+      "relationshipValidateRules": "required"
+    }
+  ],
+  "service": "serviceClass"
+}
