@@ -6,6 +6,7 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 import java.util.Objects;
+import java.util.Set;
 import javax.validation.constraints.*;
 
 /**
@@ -50,6 +51,16 @@ public class ClientDTO implements Serializable {
     private ZonedDateTime createdAt;
 
     private ZonedDateTime updatedAt;
+
+    private Set<ClientContactDTO> contacts;
+
+    public Set<ClientContactDTO> getContacts() {
+        return contacts;
+    }
+
+    public void setContacts(Set<ClientContactDTO> contacts) {
+        this.contacts = contacts;
+    }
 
     public Long getId() {
         return id;

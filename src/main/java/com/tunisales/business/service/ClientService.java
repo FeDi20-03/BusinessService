@@ -109,4 +109,9 @@ public class ClientService {
         log.debug("Request to delete Client : {}", id);
         clientRepository.deleteById(id);
     }
+
+    public Client findByTaxId(String taxId) {
+        log.debug("Request to get Client by taxId : {}", taxId);
+        return clientRepository.findByTaxId(taxId);
+    }
 }

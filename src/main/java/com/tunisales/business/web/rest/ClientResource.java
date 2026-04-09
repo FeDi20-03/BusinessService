@@ -1,5 +1,6 @@
 package com.tunisales.business.web.rest;
 
+import com.tunisales.business.domain.Client;
 import com.tunisales.business.repository.ClientRepository;
 import com.tunisales.business.service.ClientQueryService;
 import com.tunisales.business.service.ClientService;
@@ -183,6 +184,18 @@ public class ClientResource {
         log.debug("REST request to get Client : {}", id);
         Optional<ClientDTO> clientDTO = clientService.findOne(id);
         return ResponseUtil.wrapOrNotFound(clientDTO);
+    }
+
+    @GetMapping("/clients/tax-id/{taxId}")
+    public Client getClientByTaxId(@PathVariable String taxId) {
+        log.debug("REST request to get Client by taxId : {}", taxId);
+        return clientService.findByTaxId(taxId);
+    }
+
+    @GetMapping("/clients/tax-id1")
+    public Client getClientByTaxId1(@RequestParam(name = "taxId") String taxId) {
+        log.debug("REST request to get Client by taxId : {}", taxId);
+        return clientService.findByTaxId(taxId);
     }
 
     /**

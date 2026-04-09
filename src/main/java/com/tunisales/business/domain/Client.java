@@ -76,7 +76,7 @@ public class Client implements Serializable {
     @Column(name = "updated_at")
     private ZonedDateTime updatedAt;
 
-    @OneToMany(mappedBy = "client")
+    @OneToMany(mappedBy = "client", fetch = FetchType.EAGER)
     @JsonIgnoreProperties(value = { "client" }, allowSetters = true)
     private Set<ClientContact> contacts = new HashSet<>();
 

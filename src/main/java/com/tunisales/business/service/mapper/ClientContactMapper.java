@@ -18,5 +18,6 @@ public interface ClientContactMapper extends EntityMapper<ClientContactDTO, Clie
     @BeanMapping(ignoreByDefault = true)
     @Mapping(target = "id", source = "id")
     @Mapping(target = "name", source = "name")
+    @Mapping(target = "contacts", ignore = true)
     ClientDTO toDtoClientName(Client client);
 }
