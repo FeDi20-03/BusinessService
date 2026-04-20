@@ -61,8 +61,8 @@ class OrderResourceIT {
     private static final String DEFAULT_ORDER_NUMBER = "AAAAAAAAAA";
     private static final String UPDATED_ORDER_NUMBER = "BBBBBBBBBB";
 
-    private static final OrderStatus DEFAULT_STATUS = OrderStatus.DRAFT;
-    private static final OrderStatus UPDATED_STATUS = OrderStatus.SUBMITTED;
+    private static final OrderStatus DEFAULT_STATUS = OrderStatus.enAttente;
+    private static final OrderStatus UPDATED_STATUS = OrderStatus.valide;
 
     private static final BigDecimal DEFAULT_SUBTOTAL = new BigDecimal(0);
     private static final BigDecimal UPDATED_SUBTOTAL = new BigDecimal(1);
