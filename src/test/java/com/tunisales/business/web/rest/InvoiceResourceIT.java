@@ -71,8 +71,8 @@ class InvoiceResourceIT {
     private static final BigDecimal UPDATED_AMOUNT_TTC = new BigDecimal(1);
     private static final BigDecimal SMALLER_AMOUNT_TTC = new BigDecimal(0 - 1);
 
-    private static final InvoiceStatus DEFAULT_STATUS = InvoiceStatus.DRAFT;
-    private static final InvoiceStatus UPDATED_STATUS = InvoiceStatus.ISSUED;
+    private static final InvoiceStatus DEFAULT_STATUS = InvoiceStatus.PAID;
+    private static final InvoiceStatus UPDATED_STATUS = InvoiceStatus.NOT_PAID;
 
     private static final ZonedDateTime DEFAULT_ISSUE_DATE = ZonedDateTime.ofInstant(Instant.ofEpochMilli(0L), ZoneOffset.UTC);
     private static final ZonedDateTime UPDATED_ISSUE_DATE = ZonedDateTime.now(ZoneId.systemDefault()).withNano(0);
