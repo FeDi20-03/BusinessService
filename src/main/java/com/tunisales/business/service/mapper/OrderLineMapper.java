@@ -11,7 +11,7 @@ import org.mapstruct.*;
 /**
  * Mapper for the entity {@link OrderLine} and its DTO {@link OrderLineDTO}.
  */
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", uses = { ProductMapper.class })
 public interface OrderLineMapper extends EntityMapper<OrderLineDTO, OrderLine> {
     @Mapping(target = "product", source = "product", qualifiedByName = "productName")
     @Mapping(target = "order", source = "order", qualifiedByName = "orderOrderNumber")

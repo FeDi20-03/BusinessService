@@ -86,7 +86,7 @@ public class Order implements Serializable {
     @Column(name = "updated_at")
     private ZonedDateTime updatedAt;
 
-    @OneToMany(mappedBy = "order")
+    @OneToMany(mappedBy = "order", fetch = FetchType.EAGER)
     @JsonIgnoreProperties(value = { "orderLineItems", "product", "order" }, allowSetters = true)
     private Set<OrderLine> orderLines = new HashSet<>();
 

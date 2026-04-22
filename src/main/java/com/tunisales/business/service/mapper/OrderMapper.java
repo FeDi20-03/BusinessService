@@ -9,9 +9,10 @@ import org.mapstruct.*;
 /**
  * Mapper for the entity {@link Order} and its DTO {@link OrderDTO}.
  */
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", uses = { OrderLineMapper.class })
 public interface OrderMapper extends EntityMapper<OrderDTO, Order> {
     @Mapping(target = "client", source = "client", qualifiedByName = "clientName")
+    @Mapping(target = "orderLines", source = "orderLines")
     OrderDTO toDto(Order s);
 
     @Named("clientName")

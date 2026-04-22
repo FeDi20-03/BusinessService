@@ -5,6 +5,7 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 import java.util.Objects;
+import java.util.Set;
 import javax.validation.constraints.*;
 
 /**
@@ -195,6 +196,16 @@ public class OrderDTO implements Serializable {
 
     public void setClient(ClientDTO client) {
         this.client = client;
+    }
+
+    private Set<OrderLineDTO> orderLines;
+
+    public Set<OrderLineDTO> getOrderLines() {
+        return orderLines;
+    }
+
+    public void setOrderLines(Set<OrderLineDTO> orderLines) {
+        this.orderLines = orderLines;
     }
 
     @Override
