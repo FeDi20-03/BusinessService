@@ -39,6 +39,10 @@ public class OrderService {
     public OrderDTO save(OrderDTO orderDTO) {
         log.debug("Request to save Order : {}", orderDTO);
         Order order = orderMapper.toEntity(orderDTO);
+        if (order.getOrderLines() != null) {
+            Order finalOrder = order;
+            order.getOrderLines().forEach(line -> line.setOrder(finalOrder));
+        }
         order = orderRepository.save(order);
         return orderMapper.toDto(order);
     }
