@@ -242,3 +242,19 @@ jhipster:
 # ===================================================================
 
 # application:
+
+# ===================================================================
+# TuniSales — inter-service URLs and business properties
+# ===================================================================
+tunisales:
+  platform:
+    url: http://localhost:8082
+  inventory:
+    url: http://localhost:8081
+  business:
+    # Loyalty score job — first day of each month at 02:00 (sub-step 2.11).
+    loyalty-cron: 0 0 2 1 * *
+    # Commercial performance score job — first day of each month at 03:00 (sub-step 2.12).
+    commercial-score-cron: 0 0 3 1 * *
+    # Monthly sales target used in the commercial score formula (sub-step 2.12).
+    commercial-monthly-target: 100000

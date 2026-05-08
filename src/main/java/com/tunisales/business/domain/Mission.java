@@ -2,6 +2,7 @@ package com.tunisales.business.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.tunisales.business.domain.enumeration.MissionStatus;
+import com.tunisales.business.domain.enumeration.MissionType;
 import java.io.Serializable;
 import java.time.ZonedDateTime;
 import java.util.HashSet;
@@ -51,6 +52,12 @@ public class Mission implements Serializable {
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
     private MissionStatus status;
+
+    /** Sub-step 2.7 — kind of mission (sales, proposal, marketing, stock check); defaults to VENTE. */
+    @NotNull
+    @Enumerated(EnumType.STRING)
+    @Column(name = "mission_type", nullable = false)
+    private MissionType missionType = MissionType.VENTE;
 
     @NotNull
     @Column(name = "created_at", nullable = false)
@@ -154,6 +161,19 @@ public class Mission implements Serializable {
 
     public void setStatus(MissionStatus status) {
         this.status = status;
+    }
+
+    public MissionType getMissionType() {
+        return this.missionType;
+    }
+
+    public Mission missionType(MissionType missionType) {
+        this.setMissionType(missionType);
+        return this;
+    }
+
+    public void setMissionType(MissionType missionType) {
+        this.missionType = missionType;
     }
 
     public ZonedDateTime getCreatedAt() {

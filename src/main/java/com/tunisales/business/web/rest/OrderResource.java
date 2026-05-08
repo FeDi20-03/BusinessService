@@ -13,6 +13,7 @@ import java.util.Objects;
 import java.util.Optional;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,6 +21,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import tech.jhipster.web.util.HeaderUtil;
@@ -199,5 +202,108 @@ public class OrderResource {
             .noContent()
             .headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString()))
             .build();
+    }
+
+    // ------------------------------------------------------------------------
+    // Workflow endpoints (sub-step 2.1 — NEGOTIATING)
+    // ------------------------------------------------------------------------
+
+    /**
+     * {@code POST  /orders/:id/submit} : submit a DRAFT order (commercial action).
+     *
+     * @param id the order id.
+     * @return the updated order DTO.
+     */
+    @PostMapping("/orders/{id}/submit")
+    public ResponseEntity<OrderDTO> submitOrder(@PathVariable Long id) {
+        log.debug("REST request to submit Order : {}", id);
+        OrderDTO result = orderService.submit(id);
+        return ResponseEntity.ok().body(result);
+    }
+
+    /**
+     * {@code POST  /orders/:id/validate} : validate a SUBMITTED order (admin only).
+     *
+     * @param id the order id.
+     * @param request body containing {@code adminLogin} (optional — falls back to Spring Security principal).
+     * @param authentication the current authentication (for audit).
+     * @return the updated order DTO.
+     */
+    @PostMapping("/orders/{id}/validate")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN_COMMERCIAL','ROLE_ADMIN_SYSTEME')")
+    public ResponseEntity<OrderDTO> validateOrder(
+        @PathVariable Long id,
+        @RequestBody(required = false) ValidateRequest request,
+        Authentication authentication
+    ) {
+        log.debug("REST request to validate Order : {}", id);
+        String adminLogin = (request != null && request.getAdminLogin() != null)
+            ? request.getAdminLogin()
+            : (authentication != null ? authentication.getName() : null);
+        OrderDTO result = orderService.validate(id, adminLogin);
+        return ResponseEntity.ok().body(result);
+    }
+
+    /**
+     * {@code POST  /orders/:id/negotiate} : move a SUBMITTED order to NEGOTIATING (admin only).
+     *
+     * @param id the order id.
+     * @param request body containing the negotiation {@code reason}.
+     * @return the updated order DTO.
+     */
+    @PostMapping("/orders/{id}/negotiate")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN_COMMERCIAL','ROLE_ADMIN_SYSTEME')")
+    public ResponseEntity<OrderDTO> negotiateOrder(@PathVariable Long id, @Valid @RequestBody ReasonRequest request) {
+        log.debug("REST request to negotiate Order : {}", id);
+        OrderDTO result = orderService.negotiate(id, request.getReason());
+        return ResponseEntity.ok().body(result);
+    }
+
+    /**
+     * {@code POST  /orders/:id/reject} : reject a SUBMITTED order (admin only).
+     *
+     * @param id the order id.
+     * @param request body containing the rejection {@code reason}.
+     * @return the updated order DTO.
+     */
+    @PostMapping("/orders/{id}/reject")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN_COMMERCIAL','ROLE_ADMIN_SYSTEME')")
+    public ResponseEntity<OrderDTO> rejectOrder(@PathVariable Long id, @Valid @RequestBody ReasonRequest request) {
+        log.debug("REST request to reject Order : {}", id);
+        OrderDTO result = orderService.reject(id, request.getReason());
+        return ResponseEntity.ok().body(result);
+    }
+
+    // ----- Workflow request bodies -----
+
+    /** Request body for {@code POST /orders/:id/validate}. */
+    public static class ValidateRequest {
+
+        @Size(max = 50)
+        private String adminLogin;
+
+        public String getAdminLogin() {
+            return adminLogin;
+        }
+
+        public void setAdminLogin(String adminLogin) {
+            this.adminLogin = adminLogin;
+        }
+    }
+
+    /** Request body for {@code POST /orders/:id/negotiate} and {@code POST /orders/:id/reject}. */
+    public static class ReasonRequest {
+
+        @NotNull
+        @Size(min = 1, max = 500)
+        private String reason;
+
+        public String getReason() {
+            return reason;
+        }
+
+        public void setReason(String reason) {
+            this.reason = reason;
+        }
     }
 }

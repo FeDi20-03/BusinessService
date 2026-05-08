@@ -1,5 +1,6 @@
 package com.tunisales.business.web.rest;
 
+import com.tunisales.business.client.PlatformDocumentClient;
 import com.tunisales.business.repository.InvoiceRepository;
 import com.tunisales.business.service.InvoiceQueryService;
 import com.tunisales.business.service.InvoiceService;
@@ -19,8 +20,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import tech.jhipster.web.util.HeaderUtil;
 import tech.jhipster.web.util.PaginationUtil;
@@ -46,10 +49,18 @@ public class InvoiceResource {
 
     private final InvoiceQueryService invoiceQueryService;
 
-    public InvoiceResource(InvoiceService invoiceService, InvoiceRepository invoiceRepository, InvoiceQueryService invoiceQueryService) {
+    private final PlatformDocumentClient platformDocumentClient;
+
+    public InvoiceResource(
+        InvoiceService invoiceService,
+        InvoiceRepository invoiceRepository,
+        InvoiceQueryService invoiceQueryService,
+        PlatformDocumentClient platformDocumentClient
+    ) {
         this.invoiceService = invoiceService;
         this.invoiceRepository = invoiceRepository;
         this.invoiceQueryService = invoiceQueryService;
+        this.platformDocumentClient = platformDocumentClient;
     }
 
     /**
@@ -199,5 +210,28 @@ public class InvoiceResource {
             .noContent()
             .headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString()))
             .build();
+    }
+
+    /**
+     * Sub-step 2.4 — {@code GET /invoices/:id/pdf} streams the rendered PDF
+     * fetched from the Platform document service.
+     *
+     * <p>The {@code id} is the invoice id; the same id is used as the document
+     * id on the Platform side (1:1 mapping by convention). Returns 503 if the
+     * remote service is unreachable.</p>
+     */
+    @GetMapping(value = "/invoices/{id}/pdf", produces = MediaType.APPLICATION_PDF_VALUE)
+    public ResponseEntity<byte[]> getInvoicePdf(@PathVariable Long id) {
+        log.debug("REST request to get Invoice PDF : {}", id);
+        if (!invoiceRepository.existsById(id)) {
+            return ResponseEntity.notFound().build();
+        }
+        try {
+            byte[] pdf = platformDocumentClient.fetchRendered(id);
+            return ResponseEntity.ok().contentType(MediaType.APPLICATION_PDF).body(pdf);
+        } catch (RestClientException ex) {
+            log.warn("Unable to fetch rendered invoice {}: {}", id, ex.getMessage());
+            return ResponseEntity.status(org.springframework.http.HttpStatus.SERVICE_UNAVAILABLE).build();
+        }
     }
 }

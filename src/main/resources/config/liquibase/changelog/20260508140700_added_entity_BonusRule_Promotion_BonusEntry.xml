@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <!-- Sub-step 2.9 — BonusRule + Promotion + BonusEntry + order_line.vendeur_login. -->
+    <changeSet id="20260508140700-1" author="fedi">
+        <createTable tableName="bonus_rule">
+            <column name="id" type="bigint">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="tenant_id" type="bigint"><constraints nullable="false"/></column>
+            <column name="product_id" type="bigint"><constraints nullable="true"/></column>
+            <column name="zone_id" type="bigint"><constraints nullable="true"/></column>
+            <column name="amount" type="decimal(21,2)"><constraints nullable="false"/></column>
+            <column name="period_start" type="date"><constraints nullable="true"/></column>
+            <column name="period_end" type="date"><constraints nullable="true"/></column>
+            <column name="is_active" type="boolean" defaultValueBoolean="true">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createTable tableName="promotion">
+            <column name="id" type="bigint">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="tenant_id" type="bigint"><constraints nullable="false"/></column>
+            <column name="product_id" type="bigint"><constraints nullable="false"/></column>
+            <column name="discount_pct" type="decimal(21,2)"><constraints nullable="false"/></column>
+            <column name="start_date" type="date"><constraints nullable="false"/></column>
+            <column name="end_date" type="date"><constraints nullable="false"/></column>
+            <column name="conditions_json" type="${clobType}"><constraints nullable="true"/></column>
+            <column name="is_active" type="boolean" defaultValueBoolean="true">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createTable tableName="bonus_entry">
+            <column name="id" type="bigint">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="tenant_id" type="bigint"><constraints nullable="false"/></column>
+            <column name="vendeur_login" type="varchar(100)"><constraints nullable="false"/></column>
+            <column name="order_line_id" type="bigint"><constraints nullable="false"/></column>
+            <column name="bonus_rule_id" type="bigint"><constraints nullable="true"/></column>
+            <column name="amount" type="decimal(21,2)"><constraints nullable="false"/></column>
+            <column name="computed_at" type="${datetimeType}"><constraints nullable="false"/></column>
+        </createTable>
+        <dropDefaultValue tableName="bonus_entry" columnName="computed_at" columnDataType="${datetimeType}"/>
+
+        <addColumn tableName="order_line">
+            <column name="vendeur_login" type="varchar(100)">
+                <constraints nullable="true"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+</databaseChangeLog>

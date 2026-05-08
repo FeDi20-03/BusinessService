@@ -1,16 +1,21 @@
 package com.tunisales.business.web.rest;
 
+import com.tunisales.business.domain.Mission;
+import com.tunisales.business.domain.enumeration.MissionStatus;
 import com.tunisales.business.repository.MissionRepository;
+import com.tunisales.business.security.SecurityUtils;
 import com.tunisales.business.service.MissionQueryService;
 import com.tunisales.business.service.MissionService;
 import com.tunisales.business.service.criteria.MissionCriteria;
 import com.tunisales.business.service.dto.MissionDTO;
+import com.tunisales.business.service.mapper.MissionMapper;
 import com.tunisales.business.web.rest.errors.BadRequestAlertException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import org.slf4j.Logger;
@@ -46,10 +51,18 @@ public class MissionResource {
 
     private final MissionQueryService missionQueryService;
 
-    public MissionResource(MissionService missionService, MissionRepository missionRepository, MissionQueryService missionQueryService) {
+    private final MissionMapper missionMapper;
+
+    public MissionResource(
+        MissionService missionService,
+        MissionRepository missionRepository,
+        MissionQueryService missionQueryService,
+        MissionMapper missionMapper
+    ) {
         this.missionService = missionService;
         this.missionRepository = missionRepository;
         this.missionQueryService = missionQueryService;
+        this.missionMapper = missionMapper;
     }
 
     /**
@@ -199,5 +212,26 @@ public class MissionResource {
             .noContent()
             .headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString()))
             .build();
+    }
+
+    /**
+     * Sub-step 2.7 — {@code GET /missions/me} : list the current user's missions,
+     * optionally filtered by status.
+     *
+     * @param status optional {@link MissionStatus} filter.
+     * @return the missions assigned to the current login.
+     */
+    @GetMapping("/missions/me")
+    public ResponseEntity<List<MissionDTO>> getMyMissions(@RequestParam(value = "status", required = false) MissionStatus status) {
+        String login = SecurityUtils.getCurrentUserLogin().orElse(null);
+        log.debug("REST request to get Missions for me (login={}, status={})", login, status);
+        if (login == null) {
+            return ResponseEntity.ok(java.util.Collections.emptyList());
+        }
+        List<Mission> missions = (status == null)
+            ? missionRepository.findByAssignedToLogin(login)
+            : missionRepository.findByAssignedToLoginAndStatus(login, status);
+        List<MissionDTO> dtos = missions.stream().map(missionMapper::toDto).collect(Collectors.toList());
+        return ResponseEntity.ok(dtos);
     }
 }

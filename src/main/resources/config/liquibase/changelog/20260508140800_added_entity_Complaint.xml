@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <!-- Sub-step 2.10 — Complaint. -->
+    <changeSet id="20260508140800-1" author="fedi">
+        <createTable tableName="complaint">
+            <column name="id" type="bigint">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="tenant_id" type="bigint"><constraints nullable="false"/></column>
+            <column name="author_login" type="varchar(100)"><constraints nullable="false"/></column>
+            <column name="type" type="varchar(50)"><constraints nullable="false"/></column>
+            <column name="description" type="${clobType}"><constraints nullable="true"/></column>
+            <column name="status" type="varchar(50)"><constraints nullable="false"/></column>
+            <column name="stock_item_id" type="bigint"><constraints nullable="true"/></column>
+            <column name="created_at" type="${datetimeType}"><constraints nullable="false"/></column>
+            <column name="resolved_at" type="${datetimeType}"><constraints nullable="true"/></column>
+            <column name="resolved_by_login" type="varchar(100)"><constraints nullable="true"/></column>
+        </createTable>
+        <dropDefaultValue tableName="complaint" columnName="created_at" columnDataType="${datetimeType}"/>
+        <dropDefaultValue tableName="complaint" columnName="resolved_at" columnDataType="${datetimeType}"/>
+    </changeSet>
+
+</databaseChangeLog>

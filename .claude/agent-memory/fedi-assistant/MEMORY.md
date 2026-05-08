@@ -1,0 +1,2 @@
+- [BusinessService project context](project_business_service.md) — JHipster 7.9.3 / Spring Boot 2.7 / Java 11; Docker/Postgres needed for IT tests; active Order workflow rollout (2.x), 2.1 NEGOTIATING done 2026-05-08
+- [Respect JHipster scaffolding pattern](feedback_jhipster_pattern.md) — extend generated Entity/DTO/Service/Resource quartet, never bypass it; add liquibase incremental changesets before the needle

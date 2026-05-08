@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <!--
+        Added the column negotiation_reason to entity Order.
+        Supports the NEGOTIATING workflow status: when an order moves from
+        SUBMITTED to NEGOTIATING, the admin records the reason here.
+    -->
+    <changeSet id="20260508120000-1" author="fedi">
+        <addColumn tableName="jhi_order">
+            <column name="negotiation_reason" type="varchar(500)">
+                <constraints nullable="true" />
+            </column>
+        </addColumn>
+    </changeSet>
+
+</databaseChangeLog>

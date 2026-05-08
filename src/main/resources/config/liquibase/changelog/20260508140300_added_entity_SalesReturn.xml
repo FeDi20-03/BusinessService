@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <!-- Sub-step 2.5 — SalesReturn + SalesReturnLine. -->
+    <changeSet id="20260508140300-1" author="fedi">
+        <createTable tableName="sales_return">
+            <column name="id" type="bigint">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="tenant_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+            <column name="invoice_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+            <column name="return_number" type="varchar(50)">
+                <constraints nullable="false" unique="true" uniqueConstraintName="ux_sales_return__number"/>
+            </column>
+            <column name="reason" type="varchar(1000)"><constraints nullable="true"/></column>
+            <column name="status" type="varchar(50)"><constraints nullable="false"/></column>
+            <column name="refund_amount" type="decimal(21,2)"><constraints nullable="true"/></column>
+            <column name="created_by_login" type="varchar(100)"><constraints nullable="true"/></column>
+            <column name="created_at" type="${datetimeType}"><constraints nullable="false"/></column>
+            <column name="processed_at" type="${datetimeType}"><constraints nullable="true"/></column>
+        </createTable>
+        <dropDefaultValue tableName="sales_return" columnName="created_at" columnDataType="${datetimeType}"/>
+        <dropDefaultValue tableName="sales_return" columnName="processed_at" columnDataType="${datetimeType}"/>
+
+        <createTable tableName="sales_return_line">
+            <column name="id" type="bigint">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="sales_return_id" type="bigint">
+                <constraints nullable="false"
+                             foreignKeyName="fk_sales_return_line__return_id"
+                             references="sales_return(id)"/>
+            </column>
+            <column name="invoice_line_id" type="bigint"><constraints nullable="false"/></column>
+            <column name="imei" type="varchar(50)"><constraints nullable="true"/></column>
+            <column name="stock_item_id" type="bigint"><constraints nullable="true"/></column>
+            <column name="item_condition" type="varchar(50)"><constraints nullable="false"/></column>
+            <column name="refund_amount" type="decimal(21,2)"><constraints nullable="true"/></column>
+        </createTable>
+    </changeSet>
+
+</databaseChangeLog>

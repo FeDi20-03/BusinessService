@@ -62,6 +62,17 @@ public class OrderLine implements Serializable {
     @JsonIgnoreProperties(value = { "orderLines", "deliveries", "invoices", "client" }, allowSetters = true)
     private Order order;
 
+    /** Sub-step 2.3 — actual discount percentage applied to this line (0..100); validated against the product's min/max range at submit time. */
+    @DecimalMin(value = "0")
+    @DecimalMax(value = "100")
+    @Column(name = "applied_discount_pct", precision = 21, scale = 2)
+    private BigDecimal appliedDiscountPct;
+
+    /** Sub-step 2.9 — login of the seller (vendeur) credited for this line; populated when the order is submitted. */
+    @Size(max = 100)
+    @Column(name = "vendeur_login", length = 100)
+    private String vendeurLogin;
+
     // jhipster-needle-entity-add-field - JHipster will add fields here
 
     public Long getId() {
@@ -197,6 +208,32 @@ public class OrderLine implements Serializable {
     public OrderLine order(Order order) {
         this.setOrder(order);
         return this;
+    }
+
+    public BigDecimal getAppliedDiscountPct() {
+        return this.appliedDiscountPct;
+    }
+
+    public OrderLine appliedDiscountPct(BigDecimal appliedDiscountPct) {
+        this.setAppliedDiscountPct(appliedDiscountPct);
+        return this;
+    }
+
+    public void setAppliedDiscountPct(BigDecimal appliedDiscountPct) {
+        this.appliedDiscountPct = appliedDiscountPct;
+    }
+
+    public String getVendeurLogin() {
+        return this.vendeurLogin;
+    }
+
+    public OrderLine vendeurLogin(String vendeurLogin) {
+        this.setVendeurLogin(vendeurLogin);
+        return this;
+    }
+
+    public void setVendeurLogin(String vendeurLogin) {
+        this.vendeurLogin = vendeurLogin;
     }
 
     // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here

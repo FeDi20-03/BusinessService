@@ -2,6 +2,7 @@ package com.tunisales.business.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.tunisales.business.domain.enumeration.OrderStatus;
+import com.tunisales.business.domain.enumeration.PaymentMethod;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
@@ -68,6 +69,15 @@ public class Order implements Serializable {
     @Size(max = 1000)
     @Column(name = "rejection_reason", length = 1000)
     private String rejectionReason;
+
+    @Size(max = 500)
+    @Column(name = "negotiation_reason", length = 500)
+    private String negotiationReason;
+
+    @NotNull
+    @Enumerated(EnumType.STRING)
+    @Column(name = "payment_method", nullable = false)
+    private PaymentMethod paymentMethod = PaymentMethod.CASH;
 
     @Column(name = "submitted_at")
     private ZonedDateTime submittedAt;
@@ -246,6 +256,32 @@ public class Order implements Serializable {
 
     public void setRejectionReason(String rejectionReason) {
         this.rejectionReason = rejectionReason;
+    }
+
+    public String getNegotiationReason() {
+        return this.negotiationReason;
+    }
+
+    public Order negotiationReason(String negotiationReason) {
+        this.setNegotiationReason(negotiationReason);
+        return this;
+    }
+
+    public void setNegotiationReason(String negotiationReason) {
+        this.negotiationReason = negotiationReason;
+    }
+
+    public PaymentMethod getPaymentMethod() {
+        return this.paymentMethod;
+    }
+
+    public Order paymentMethod(PaymentMethod paymentMethod) {
+        this.setPaymentMethod(paymentMethod);
+        return this;
+    }
+
+    public void setPaymentMethod(PaymentMethod paymentMethod) {
+        this.paymentMethod = paymentMethod;
     }
 
     public ZonedDateTime getSubmittedAt() {
@@ -453,6 +489,8 @@ public class Order implements Serializable {
             ", paymentTermsDays=" + getPaymentTermsDays() +
             ", dueDate='" + getDueDate() + "'" +
             ", rejectionReason='" + getRejectionReason() + "'" +
+            ", negotiationReason='" + getNegotiationReason() + "'" +
+            ", paymentMethod='" + getPaymentMethod() + "'" +
             ", submittedAt='" + getSubmittedAt() + "'" +
             ", validatedAt='" + getValidatedAt() + "'" +
             ", isDeleted='" + getIsDeleted() + "'" +

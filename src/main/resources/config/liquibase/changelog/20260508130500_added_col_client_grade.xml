@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <!--
+        Sub-step 2.2 — adds the column grade to entity Client.
+        Required by PaymentEligibilityService: clients paying by check
+        must have a grade (A, B, or C). Grade C is capped at 50% of creditLimit.
+        Nullable: existing clients have no grade until explicitly assigned;
+        a null grade blocks any check payment (handled at service level).
+    -->
+    <changeSet id="20260508130500-1" author="fedi">
+        <addColumn tableName="client">
+            <column name="grade" type="varchar(10)">
+                <constraints nullable="true" />
+            </column>
+        </addColumn>
+    </changeSet>
+
+</databaseChangeLog>

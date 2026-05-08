@@ -1,6 +1,7 @@
 package com.tunisales.business.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.tunisales.business.domain.enumeration.ClientGrade;
 import com.tunisales.business.domain.enumeration.ClientStatus;
 import com.tunisales.business.domain.enumeration.ClientType;
 import java.io.Serializable;
@@ -61,6 +62,10 @@ public class Client implements Serializable {
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
     private ClientStatus status;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "grade")
+    private ClientGrade grade;
 
     @Column(name = "last_order_at")
     private ZonedDateTime lastOrderAt;
@@ -205,6 +210,19 @@ public class Client implements Serializable {
 
     public void setStatus(ClientStatus status) {
         this.status = status;
+    }
+
+    public ClientGrade getGrade() {
+        return this.grade;
+    }
+
+    public Client grade(ClientGrade grade) {
+        this.setGrade(grade);
+        return this;
+    }
+
+    public void setGrade(ClientGrade grade) {
+        this.grade = grade;
     }
 
     public ZonedDateTime getLastOrderAt() {
@@ -384,6 +402,7 @@ public class Client implements Serializable {
             ", creditUsed=" + getCreditUsed() +
             ", paymentTermsDays=" + getPaymentTermsDays() +
             ", status='" + getStatus() + "'" +
+            ", grade='" + getGrade() + "'" +
             ", lastOrderAt='" + getLastOrderAt() + "'" +
             ", isDeleted='" + getIsDeleted() + "'" +
             ", createdAt='" + getCreatedAt() + "'" +

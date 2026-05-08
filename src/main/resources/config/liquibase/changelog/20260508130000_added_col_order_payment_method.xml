@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <!--
+        Sub-step 2.2 — adds the column payment_method to entity Order.
+        Used by PaymentEligibilityService to decide whether to check
+        the credit-limit / grade rules before allowing submit().
+        Default value 'CASH' so existing orders remain valid.
+    -->
+    <changeSet id="20260508130000-1" author="fedi">
+        <addColumn tableName="jhi_order">
+            <column name="payment_method" type="varchar(50)" defaultValue="CASH">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+    </changeSet>
+
+</databaseChangeLog>

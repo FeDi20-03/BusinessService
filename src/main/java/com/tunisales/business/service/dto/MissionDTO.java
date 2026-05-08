@@ -1,6 +1,7 @@
 package com.tunisales.business.service.dto;
 
 import com.tunisales.business.domain.enumeration.MissionStatus;
+import com.tunisales.business.domain.enumeration.MissionType;
 import java.io.Serializable;
 import java.time.ZonedDateTime;
 import java.util.Objects;
@@ -33,6 +34,9 @@ public class MissionDTO implements Serializable {
 
     @NotNull
     private MissionStatus status;
+
+    /** Sub-step 2.7 — kind of mission (defaults to VENTE on the entity). */
+    private MissionType missionType;
 
     @NotNull
     private ZonedDateTime createdAt;
@@ -93,6 +97,14 @@ public class MissionDTO implements Serializable {
 
     public void setStatus(MissionStatus status) {
         this.status = status;
+    }
+
+    public MissionType getMissionType() {
+        return missionType;
+    }
+
+    public void setMissionType(MissionType missionType) {
+        this.missionType = missionType;
     }
 
     public ZonedDateTime getCreatedAt() {

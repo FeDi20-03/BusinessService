@@ -1,19 +1,25 @@
 package com.tunisales.business.web.rest;
 
 import com.tunisales.business.domain.Client;
+import com.tunisales.business.domain.enumeration.ClientGrade;
 import com.tunisales.business.repository.ClientRepository;
+import com.tunisales.business.service.ClientAssignmentService;
 import com.tunisales.business.service.ClientQueryService;
 import com.tunisales.business.service.ClientService;
 import com.tunisales.business.service.criteria.ClientCriteria;
+import com.tunisales.business.service.dto.ClientAssignmentDTO;
 import com.tunisales.business.service.dto.ClientDTO;
+import com.tunisales.business.service.mapper.ClientMapper;
 import com.tunisales.business.web.rest.errors.BadRequestAlertException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -21,6 +27,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import tech.jhipster.web.util.HeaderUtil;
@@ -47,10 +54,22 @@ public class ClientResource {
 
     private final ClientQueryService clientQueryService;
 
-    public ClientResource(ClientService clientService, ClientRepository clientRepository, ClientQueryService clientQueryService) {
+    private final ClientAssignmentService clientAssignmentService;
+
+    private final ClientMapper clientMapper;
+
+    public ClientResource(
+        ClientService clientService,
+        ClientRepository clientRepository,
+        ClientQueryService clientQueryService,
+        ClientAssignmentService clientAssignmentService,
+        ClientMapper clientMapper
+    ) {
         this.clientService = clientService;
         this.clientRepository = clientRepository;
         this.clientQueryService = clientQueryService;
+        this.clientAssignmentService = clientAssignmentService;
+        this.clientMapper = clientMapper;
     }
 
     /**
@@ -212,5 +231,85 @@ public class ClientResource {
             .noContent()
             .headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString()))
             .build();
+    }
+
+    /**
+     * Sub-step 2.8 — assign a commercial to a client within a zone.
+     * Replaces any existing assignment for that client.
+     */
+    @PostMapping("/clients/{id}/assign")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN_COMMERCIAL')")
+    public ResponseEntity<ClientAssignmentDTO> assign(@PathVariable("id") Long clientId, @Valid @RequestBody AssignRequest request) {
+        log.debug("REST request to assign client {} to {} on zone {}", clientId, request.commercialLogin, request.zoneId);
+        ClientAssignmentDTO result = clientAssignmentService.assign(clientId, request.commercialLogin, request.zoneId);
+        return ResponseEntity.ok(result);
+    }
+
+    /**
+     * Sub-step 2.8 — list all clients assigned to the given commercial login.
+     */
+    @GetMapping("/clients/by-commercial/{login}")
+    public ResponseEntity<List<ClientDTO>> getByCommercial(@PathVariable("login") String login) {
+        log.debug("REST request to list clients for commercial {}", login);
+        List<Long> ids = clientAssignmentService.findClientIdsByCommercialLogin(login);
+        List<ClientDTO> dtos = clientRepository.findAllById(ids).stream().map(clientMapper::toDto).collect(Collectors.toList());
+        return ResponseEntity.ok(dtos);
+    }
+
+    /**
+     * Sub-step 2.11 — set the loyalty grade (A/B/C) of a client.
+     */
+    @PutMapping("/clients/{id}/grade")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN_COMMERCIAL')")
+    public ResponseEntity<ClientDTO> setGrade(@PathVariable Long id, @Valid @RequestBody GradeRequest request) {
+        log.debug("REST request to set grade {} on client {}", request.grade, id);
+        Client client = clientRepository
+            .findById(id)
+            .orElseThrow(() -> new BadRequestAlertException("Client not found", ENTITY_NAME, "idnotfound"));
+        client.setGrade(request.grade);
+        Client saved = clientRepository.save(client);
+        return ResponseEntity.ok(clientMapper.toDto(saved));
+    }
+
+    /** Request body for {@code POST /clients/{id}/assign}. */
+    public static class AssignRequest {
+
+        @NotNull
+        @Size(max = 100)
+        private String commercialLogin;
+
+        @NotNull
+        private Long zoneId;
+
+        public String getCommercialLogin() {
+            return commercialLogin;
+        }
+
+        public void setCommercialLogin(String commercialLogin) {
+            this.commercialLogin = commercialLogin;
+        }
+
+        public Long getZoneId() {
+            return zoneId;
+        }
+
+        public void setZoneId(Long zoneId) {
+            this.zoneId = zoneId;
+        }
+    }
+
+    /** Request body for {@code PUT /clients/{id}/grade}. */
+    public static class GradeRequest {
+
+        @NotNull
+        private ClientGrade grade;
+
+        public ClientGrade getGrade() {
+            return grade;
+        }
+
+        public void setGrade(ClientGrade grade) {
+            this.grade = grade;
+        }
     }
 }

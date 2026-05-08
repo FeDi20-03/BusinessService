@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <!-- Sub-step 2.6 — CreditNote (avoir commercial). -->
+    <changeSet id="20260508140400-1" author="fedi">
+        <createTable tableName="credit_note">
+            <column name="id" type="bigint">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="tenant_id" type="bigint"><constraints nullable="false"/></column>
+            <column name="client_id" type="bigint"><constraints nullable="false"/></column>
+            <column name="credit_note_number" type="varchar(50)">
+                <constraints nullable="false" unique="true" uniqueConstraintName="ux_credit_note__number"/>
+            </column>
+            <column name="amount" type="decimal(21,2)"><constraints nullable="false"/></column>
+            <column name="reason" type="varchar(1000)"><constraints nullable="true"/></column>
+            <column name="status" type="varchar(50)"><constraints nullable="false"/></column>
+            <column name="created_by_login" type="varchar(100)"><constraints nullable="true"/></column>
+            <column name="validated_by_login" type="varchar(100)"><constraints nullable="true"/></column>
+            <column name="created_at" type="${datetimeType}"><constraints nullable="false"/></column>
+            <column name="validated_at" type="${datetimeType}"><constraints nullable="true"/></column>
+        </createTable>
+        <dropDefaultValue tableName="credit_note" columnName="created_at" columnDataType="${datetimeType}"/>
+        <dropDefaultValue tableName="credit_note" columnName="validated_at" columnDataType="${datetimeType}"/>
+    </changeSet>
+
+</databaseChangeLog>

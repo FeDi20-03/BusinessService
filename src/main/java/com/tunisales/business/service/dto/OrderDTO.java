@@ -1,6 +1,7 @@
 package com.tunisales.business.service.dto;
 
 import com.tunisales.business.domain.enumeration.OrderStatus;
+import com.tunisales.business.domain.enumeration.PaymentMethod;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
@@ -47,6 +48,12 @@ public class OrderDTO implements Serializable {
 
     @Size(max = 1000)
     private String rejectionReason;
+
+    @Size(max = 500)
+    private String negotiationReason;
+
+    @NotNull
+    private PaymentMethod paymentMethod;
 
     private ZonedDateTime submittedAt;
 
@@ -150,6 +157,22 @@ public class OrderDTO implements Serializable {
         this.rejectionReason = rejectionReason;
     }
 
+    public String getNegotiationReason() {
+        return negotiationReason;
+    }
+
+    public void setNegotiationReason(String negotiationReason) {
+        this.negotiationReason = negotiationReason;
+    }
+
+    public PaymentMethod getPaymentMethod() {
+        return paymentMethod;
+    }
+
+    public void setPaymentMethod(PaymentMethod paymentMethod) {
+        this.paymentMethod = paymentMethod;
+    }
+
     public ZonedDateTime getSubmittedAt() {
         return submittedAt;
     }
@@ -244,6 +267,8 @@ public class OrderDTO implements Serializable {
             ", paymentTermsDays=" + getPaymentTermsDays() +
             ", dueDate='" + getDueDate() + "'" +
             ", rejectionReason='" + getRejectionReason() + "'" +
+            ", negotiationReason='" + getNegotiationReason() + "'" +
+            ", paymentMethod='" + getPaymentMethod() + "'" +
             ", submittedAt='" + getSubmittedAt() + "'" +
             ", validatedAt='" + getValidatedAt() + "'" +
             ", isDeleted='" + getIsDeleted() + "'" +

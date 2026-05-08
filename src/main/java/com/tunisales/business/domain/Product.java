@@ -70,6 +70,18 @@ public class Product implements Serializable {
     @Column(name = "updated_at")
     private ZonedDateTime updatedAt;
 
+    /** Sub-step 2.3 — minimum discount percentage allowed on this product (0..100). */
+    @DecimalMin(value = "0")
+    @DecimalMax(value = "100")
+    @Column(name = "min_discount_pct", precision = 21, scale = 2)
+    private BigDecimal minDiscountPct;
+
+    /** Sub-step 2.3 — maximum discount percentage allowed on this product (0..100). */
+    @DecimalMin(value = "0")
+    @DecimalMax(value = "100")
+    @Column(name = "max_discount_pct", precision = 21, scale = 2)
+    private BigDecimal maxDiscountPct;
+
     // jhipster-needle-entity-add-field - JHipster will add fields here
 
     public Long getId() {
@@ -226,6 +238,32 @@ public class Product implements Serializable {
 
     public void setUpdatedAt(ZonedDateTime updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public BigDecimal getMinDiscountPct() {
+        return this.minDiscountPct;
+    }
+
+    public Product minDiscountPct(BigDecimal minDiscountPct) {
+        this.setMinDiscountPct(minDiscountPct);
+        return this;
+    }
+
+    public void setMinDiscountPct(BigDecimal minDiscountPct) {
+        this.minDiscountPct = minDiscountPct;
+    }
+
+    public BigDecimal getMaxDiscountPct() {
+        return this.maxDiscountPct;
+    }
+
+    public Product maxDiscountPct(BigDecimal maxDiscountPct) {
+        this.setMaxDiscountPct(maxDiscountPct);
+        return this;
+    }
+
+    public void setMaxDiscountPct(BigDecimal maxDiscountPct) {
+        this.maxDiscountPct = maxDiscountPct;
     }
 
     // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here

@@ -1,5 +1,6 @@
 package com.tunisales.business.service.dto;
 
+import com.tunisales.business.domain.enumeration.ClientGrade;
 import com.tunisales.business.domain.enumeration.ClientStatus;
 import com.tunisales.business.domain.enumeration.ClientType;
 import java.io.Serializable;
@@ -41,6 +42,8 @@ public class ClientDTO implements Serializable {
 
     @NotNull
     private ClientStatus status;
+
+    private ClientGrade grade;
 
     private ZonedDateTime lastOrderAt;
 
@@ -134,6 +137,14 @@ public class ClientDTO implements Serializable {
         this.status = status;
     }
 
+    public ClientGrade getGrade() {
+        return grade;
+    }
+
+    public void setGrade(ClientGrade grade) {
+        this.grade = grade;
+    }
+
     public ZonedDateTime getLastOrderAt() {
         return lastOrderAt;
     }
@@ -200,6 +211,7 @@ public class ClientDTO implements Serializable {
             ", creditUsed=" + getCreditUsed() +
             ", paymentTermsDays=" + getPaymentTermsDays() +
             ", status='" + getStatus() + "'" +
+            ", grade='" + getGrade() + "'" +
             ", lastOrderAt='" + getLastOrderAt() + "'" +
             ", isDeleted='" + getIsDeleted() + "'" +
             ", createdAt='" + getCreatedAt() + "'" +

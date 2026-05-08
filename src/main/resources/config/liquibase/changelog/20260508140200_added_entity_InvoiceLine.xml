@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <!--
+        Sub-step 2.4 — Added the entity InvoiceLine.
+        Captures the per-line breakdown of an issued invoice; unit_price_at_purchase
+        is the immutable price snapshot used for refund calculations on sales returns.
+    -->
+    <changeSet id="20260508140200-1" author="fedi">
+        <createTable tableName="invoice_line">
+            <column name="id" type="bigint">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="tenant_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+            <column name="quantity" type="integer">
+                <constraints nullable="false"/>
+            </column>
+            <column name="unit_price_at_purchase" type="decimal(21,2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="line_total" type="decimal(21,2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="${datetimeType}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="invoice_id" type="bigint">
+                <constraints nullable="false"
+                             foreignKeyName="fk_invoice_line__invoice_id"
+                             references="invoice(id)"/>
+            </column>
+            <column name="product_id" type="bigint">
+                <constraints nullable="false"
+                             foreignKeyName="fk_invoice_line__product_id"
+                             references="product(id)"/>
+            </column>
+        </createTable>
+        <dropDefaultValue tableName="invoice_line" columnName="created_at" columnDataType="${datetimeType}"/>
+    </changeSet>
+
+</databaseChangeLog>

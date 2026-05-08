@@ -32,5 +32,18 @@
     <include file="config/liquibase/changelog/20260304094938_added_entity_constraints_PriceList.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20260304095138_added_entity_constraints_Visit.xml" relativeToChangelogFile="false"/>
     <!-- jhipster-needle-liquibase-add-constraints-changelog - JHipster will add liquibase constraints changelogs here -->
+    <include file="config/liquibase/changelog/20260508120000_added_col_order_negotiation.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20260508130000_added_col_order_payment_method.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20260508130500_added_col_client_grade.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20260508140000_added_discount_pct_product.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20260508140100_added_discount_pct_orderline.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20260508140200_added_entity_InvoiceLine.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20260508140300_added_entity_SalesReturn.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20260508140400_added_entity_CreditNote.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20260508140500_added_col_mission_type.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20260508140600_added_entity_Zone_ClientAssignment.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20260508140700_added_entity_BonusRule_Promotion_BonusEntry.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20260508140800_added_entity_Complaint.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20260508140900_added_entity_VehicleInspection.xml" relativeToChangelogFile="false"/>
     <!-- jhipster-needle-liquibase-add-incremental-changelog - JHipster will add incremental liquibase changelogs here -->
 </databaseChangeLog>
