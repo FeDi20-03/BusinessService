@@ -67,17 +67,12 @@ public class Order implements Serializable {
     private ZonedDateTime dueDate;
 
     @Size(max = 1000)
-    @Column(name = "rejection_reason", length = 1000)
-    private String rejectionReason;
-
-    @Size(max = 500)
-    @Column(name = "negotiation_reason", length = 500)
+    @Column(name = "negotiation_reason", length = 1000)
     private String negotiationReason;
 
-    @NotNull
-    @Enumerated(EnumType.STRING)
-    @Column(name = "payment_method", nullable = false)
-    private PaymentMethod paymentMethod = PaymentMethod.CASH;
+    @Size(max = 1000)
+    @Column(name = "rejection_reason", length = 1000)
+    private String rejectionReason;
 
     @Column(name = "submitted_at")
     private ZonedDateTime submittedAt;
@@ -95,6 +90,10 @@ public class Order implements Serializable {
 
     @Column(name = "updated_at")
     private ZonedDateTime updatedAt;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "payment_method")
+    private PaymentMethod paymentMethod;
 
     @OneToMany(mappedBy = "order", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JsonIgnoreProperties(value = { "orderLineItems", "product", "order" }, allowSetters = true)
@@ -256,32 +255,6 @@ public class Order implements Serializable {
 
     public void setRejectionReason(String rejectionReason) {
         this.rejectionReason = rejectionReason;
-    }
-
-    public String getNegotiationReason() {
-        return this.negotiationReason;
-    }
-
-    public Order negotiationReason(String negotiationReason) {
-        this.setNegotiationReason(negotiationReason);
-        return this;
-    }
-
-    public void setNegotiationReason(String negotiationReason) {
-        this.negotiationReason = negotiationReason;
-    }
-
-    public PaymentMethod getPaymentMethod() {
-        return this.paymentMethod;
-    }
-
-    public Order paymentMethod(PaymentMethod paymentMethod) {
-        this.setPaymentMethod(paymentMethod);
-        return this;
-    }
-
-    public void setPaymentMethod(PaymentMethod paymentMethod) {
-        this.paymentMethod = paymentMethod;
     }
 
     public ZonedDateTime getSubmittedAt() {
@@ -489,13 +462,37 @@ public class Order implements Serializable {
             ", paymentTermsDays=" + getPaymentTermsDays() +
             ", dueDate='" + getDueDate() + "'" +
             ", rejectionReason='" + getRejectionReason() + "'" +
-            ", negotiationReason='" + getNegotiationReason() + "'" +
-            ", paymentMethod='" + getPaymentMethod() + "'" +
             ", submittedAt='" + getSubmittedAt() + "'" +
             ", validatedAt='" + getValidatedAt() + "'" +
             ", isDeleted='" + getIsDeleted() + "'" +
             ", createdAt='" + getCreatedAt() + "'" +
             ", updatedAt='" + getUpdatedAt() + "'" +
             "}";
+    }
+
+    public void setNegotiationReason(String reason) {
+        this.negotiationReason = reason;
+    }
+
+    public String getNegotiationReason() {
+        return this.negotiationReason;
+    }
+
+    public Order negotiationReason(String negotiationReason) {
+        this.setNegotiationReason(negotiationReason);
+        return this;
+    }
+
+    public void setPaymentMethod(PaymentMethod paymentMethod) {
+        this.paymentMethod = paymentMethod;
+    }
+
+    public PaymentMethod getPaymentMethod() {
+        return this.paymentMethod;
+    }
+
+    public Order paymentMethod(PaymentMethod paymentMethod) {
+        this.setPaymentMethod(paymentMethod);
+        return this;
     }
 }

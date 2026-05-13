@@ -14,14 +14,15 @@ package com.tunisales.business.domain.enumeration;
  * are retained for backward compatibility with existing data and faker fixtures.
  */
 public enum OrderStatus {
-    // Workflow values (canonical)
+    // Workflow values
     DRAFT,
     SUBMITTED,
     VALIDATED,
     NEGOTIATING,
     REJECTED,
+    DELIVERED,
 
-    // Legacy values (kept for backward compatibility)
+    // Legacy values
     enAttente,
     valide,
     enCours,
