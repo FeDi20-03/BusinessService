@@ -4,6 +4,7 @@ import com.tunisales.business.domain.Client;
 import com.tunisales.business.repository.ClientRepository;
 import com.tunisales.business.service.dto.ClientDTO;
 import com.tunisales.business.service.mapper.ClientMapper;
+import com.tunisales.business.tenant.TenantUtils;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,6 +40,9 @@ public class ClientService {
     public ClientDTO save(ClientDTO clientDTO) {
         log.debug("Request to save Client : {}", clientDTO);
         Client client = clientMapper.toEntity(clientDTO);
+        if (client.getTenantId() == null) {
+            client.setTenantId(TenantUtils.currentTenantId());
+        }
         client = clientRepository.save(client);
         return clientMapper.toDto(client);
     }

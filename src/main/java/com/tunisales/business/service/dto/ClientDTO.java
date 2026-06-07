@@ -18,7 +18,6 @@ public class ClientDTO implements Serializable {
 
     private Long id;
 
-    @NotNull
     private Long tenantId;
 
     @NotNull

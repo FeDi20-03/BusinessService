@@ -5,8 +5,13 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+import com.tunisales.business.client.PlatformNotificationClient;
+import com.tunisales.business.domain.Invoice;
 import com.tunisales.business.domain.Order;
+import com.tunisales.business.domain.enumeration.InvoiceStatus;
 import com.tunisales.business.domain.enumeration.OrderStatus;
+import com.tunisales.business.repository.InvoiceLineRepository;
+import com.tunisales.business.repository.InvoiceRepository;
 import com.tunisales.business.repository.OrderRepository;
 import com.tunisales.business.service.PaymentEligibilityService.EligibilityResult;
 import com.tunisales.business.service.dto.OrderDTO;
@@ -19,6 +24,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -43,6 +49,24 @@ class OrderServiceWorkflowTest {
     @Mock
     private PaymentEligibilityService paymentEligibilityService;
 
+    @Mock
+    private DiscountRangeValidator discountRangeValidator;
+
+    @Mock
+    private SequenceService sequenceService;
+
+    @Mock
+    private InvoiceRepository invoiceRepository;
+
+    @Mock
+    private InvoiceLineRepository invoiceLineRepository;
+
+    @Mock
+    private ApplicationEventPublisher eventPublisher;
+
+    @Mock
+    private PlatformNotificationClient platformNotificationClient;
+
     @InjectMocks
     private OrderService orderService;
 
@@ -58,6 +82,15 @@ class OrderServiceWorkflowTest {
         lenient().when(orderRepository.save(any(Order.class))).thenAnswer(invocation -> invocation.getArgument(0));
         // Default: payment is always eligible (CHECK logic tested in PaymentEligibilityServiceTest).
         lenient().when(paymentEligibilityService.assess(any(Order.class))).thenReturn(EligibilityResult.ok());
+        // validate() creates an invoice: stub the sequence + persistence so the path runs.
+        lenient().when(sequenceService.nextInvoiceNumber()).thenReturn("INV-2026-00001");
+        lenient()
+            .when(invoiceRepository.save(any(Invoice.class)))
+            .thenAnswer(invocation -> {
+                Invoice inv = invocation.getArgument(0);
+                inv.setId(1L);
+                return inv;
+            });
     }
 
     // ---------- submit ----------
@@ -113,6 +146,11 @@ class OrderServiceWorkflowTest {
         Order saved = captor.getValue();
         assertThat(saved.getStatus()).isEqualTo(OrderStatus.VALIDATED);
         assertThat(saved.getValidatedAt()).isNotNull();
+
+        // The auto-generated invoice must default to NOT_PAID (issued, not yet paid).
+        ArgumentCaptor<Invoice> invoiceCaptor = ArgumentCaptor.forClass(Invoice.class);
+        verify(invoiceRepository).save(invoiceCaptor.capture());
+        assertThat(invoiceCaptor.getValue().getStatus()).isEqualTo(InvoiceStatus.NOT_PAID);
     }
 
     @Test

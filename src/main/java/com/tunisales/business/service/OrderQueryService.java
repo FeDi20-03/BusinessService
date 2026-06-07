@@ -166,6 +166,12 @@ public class OrderQueryService extends QueryService<Order> {
                     );
             }
         }
+        // Masquer les commandes dont le client a été supprimé (soft-delete)
+        specification = specification.and((root, query, cb) -> cb.isFalse(root.join(Order_.client, JoinType.INNER).get(Client_.isDeleted)));
+        // N'afficher que les commandes non supprimées (soft-delete), sauf filtre explicite
+        if (criteria == null || criteria.getIsDeleted() == null) {
+            specification = specification.and((root, query, cb) -> cb.isFalse(root.get(Order_.isDeleted)));
+        }
         return specification;
     }
 }

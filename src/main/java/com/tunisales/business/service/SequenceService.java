@@ -1,5 +1,6 @@
 package com.tunisales.business.service;
 
+import com.tunisales.business.repository.InvoiceRepository;
 import java.time.Year;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
@@ -18,13 +19,22 @@ import org.springframework.stereotype.Service;
  * </ul>
  *
  * <p>Each family keeps its own {@link AtomicLong} counter, scoped to the
- * current calendar year. Counters are kept in memory and reset on the
- * first call of a new year. For production-grade durability the counters
- * should be backed by a dedicated database sequence; this in-memory variant
- * is sufficient for the workflow tests and avoids a roundtrip per call.</p>
+ * current calendar year. Counters live in memory but are <em>seeded from the
+ * database</em> on the first call for a given (prefix, year): the invoice
+ * family is initialised from {@link InvoiceRepository#findMaxNumberWithPrefix}
+ * so that the sequence resumes where it left off after an application restart,
+ * instead of restarting at 1 and colliding with already-persisted numbers
+ * (unique constraint {@code ux_invoice__invoice_number}).</p>
  *
  * <p>The {@code NNNNN} sequence is left-padded to 5 digits but expands
- * naturally past 99 999 (e.g. {@code INV-2026-100000}).</p>
+ * naturally past 99 999 (e.g. {@code INV-2026-100000}). Note that database
+ * seeding relies on {@code max(invoiceNumber)} which is a lexicographic
+ * comparison — correct while the running counter stays within 5 digits; past
+ * 99 999 in a single year a dedicated DB sequence would be required.</p>
+ *
+ * <p>Only the invoice family ({@code INV}) is DB-backed today, as it is the
+ * only one persisted with a unique number constraint reached by the workflow.
+ * The {@code RET}/{@code AVO} families still start at 0 per JVM run.</p>
  */
 @Service
 public class SequenceService {
@@ -37,6 +47,12 @@ public class SequenceService {
 
     /** Per-(prefix,year) counter. Key is "{prefix}-{year}". */
     private final ConcurrentHashMap<String, AtomicLong> counters = new ConcurrentHashMap<>();
+
+    private final InvoiceRepository invoiceRepository;
+
+    public SequenceService(InvoiceRepository invoiceRepository) {
+        this.invoiceRepository = invoiceRepository;
+    }
 
     /** Generate the next invoice number, e.g. {@code INV-2026-00001}. */
     public synchronized String nextInvoiceNumber() {
@@ -56,10 +72,47 @@ public class SequenceService {
     private String next(String prefix) {
         int year = Year.now().getValue();
         String key = prefix + "-" + year;
-        AtomicLong counter = counters.computeIfAbsent(key, k -> new AtomicLong(0L));
+        AtomicLong counter = counters.computeIfAbsent(key, k -> new AtomicLong(seedFor(prefix, year)));
         long value = counter.incrementAndGet();
         String number = String.format("%s-%d-%05d", prefix, year, value);
         log.debug("Generated sequence number: {}", number);
         return number;
+    }
+
+    /**
+     * Initial counter value for a (prefix, year): the highest sequence already persisted
+     * in the database so the next {@code incrementAndGet()} resumes after it. Returns 0
+     * when nothing exists yet (or for families that are not DB-backed).
+     */
+    private long seedFor(String prefix, int year) {
+        if (!INVOICE_PREFIX.equals(prefix)) {
+            return 0L;
+        }
+        String max = invoiceRepository.findMaxNumberWithPrefix(prefix + "-" + year + "-");
+        long seed = parseSequence(max);
+        if (seed > 0) {
+            log.info("Seeding {} sequence for {} from existing max '{}' -> {}", prefix, year, max, seed);
+        }
+        return seed;
+    }
+
+    /**
+     * Extracts the trailing numeric sequence from a document number such as
+     * {@code INV-2026-00007}. Returns 0 for {@code null}, blank or unparseable input.
+     */
+    private long parseSequence(String number) {
+        if (number == null) {
+            return 0L;
+        }
+        int lastDash = number.lastIndexOf('-');
+        if (lastDash < 0 || lastDash == number.length() - 1) {
+            return 0L;
+        }
+        try {
+            return Long.parseLong(number.substring(lastDash + 1).trim());
+        } catch (NumberFormatException e) {
+            log.warn("Could not parse sequence from document number '{}', seeding from 0", number);
+            return 0L;
+        }
     }
 }

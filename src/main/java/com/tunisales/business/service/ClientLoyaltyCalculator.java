@@ -81,7 +81,11 @@ public class ClientLoyaltyCalculator {
             .findAll()
             .stream()
             .filter(inv -> inv.getClient() != null && client.getId().equals(inv.getClient().getId()))
-            .filter(inv -> inv.getStatus() == InvoiceStatus.ISSUED || inv.getStatus() == InvoiceStatus.PAID)
+            .filter(inv ->
+                inv.getStatus() == InvoiceStatus.ISSUED ||
+                inv.getStatus() == InvoiceStatus.PAID ||
+                inv.getStatus() == InvoiceStatus.NOT_PAID
+            )
             .collect(java.util.stream.Collectors.toList());
 
         int nbAchats = invoices.size();

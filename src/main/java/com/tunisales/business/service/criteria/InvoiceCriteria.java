@@ -67,6 +67,8 @@ public class InvoiceCriteria implements Serializable, Criteria {
 
     private LongFilter clientId;
 
+    private StringFilter clientName;
+
     private LongFilter orderId;
 
     private Boolean distinct;
@@ -88,6 +90,7 @@ public class InvoiceCriteria implements Serializable, Criteria {
         this.createdAt = other.createdAt == null ? null : other.createdAt.copy();
         this.updatedAt = other.updatedAt == null ? null : other.updatedAt.copy();
         this.clientId = other.clientId == null ? null : other.clientId.copy();
+        this.clientName = other.clientName == null ? null : other.clientName.copy();
         this.orderId = other.orderId == null ? null : other.orderId.copy();
         this.distinct = other.distinct;
     }
@@ -307,6 +310,21 @@ public class InvoiceCriteria implements Serializable, Criteria {
         this.clientId = clientId;
     }
 
+    public StringFilter getClientName() {
+        return clientName;
+    }
+
+    public StringFilter clientName() {
+        if (clientName == null) {
+            clientName = new StringFilter();
+        }
+        return clientName;
+    }
+
+    public void setClientName(StringFilter clientName) {
+        this.clientName = clientName;
+    }
+
     public LongFilter getOrderId() {
         return orderId;
     }
@@ -354,6 +372,7 @@ public class InvoiceCriteria implements Serializable, Criteria {
             Objects.equals(createdAt, that.createdAt) &&
             Objects.equals(updatedAt, that.updatedAt) &&
             Objects.equals(clientId, that.clientId) &&
+            Objects.equals(clientName, that.clientName) &&
             Objects.equals(orderId, that.orderId) &&
             Objects.equals(distinct, that.distinct)
         );
@@ -376,6 +395,7 @@ public class InvoiceCriteria implements Serializable, Criteria {
             createdAt,
             updatedAt,
             clientId,
+            clientName,
             orderId,
             distinct
         );
@@ -399,6 +419,7 @@ public class InvoiceCriteria implements Serializable, Criteria {
             (createdAt != null ? "createdAt=" + createdAt + ", " : "") +
             (updatedAt != null ? "updatedAt=" + updatedAt + ", " : "") +
             (clientId != null ? "clientId=" + clientId + ", " : "") +
+            (clientName != null ? "clientName=" + clientName + ", " : "") +
             (orderId != null ? "orderId=" + orderId + ", " : "") +
             (distinct != null ? "distinct=" + distinct + ", " : "") +
             "}";

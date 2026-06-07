@@ -65,7 +65,7 @@ public class ComplaintService {
             saved.getType(),
             saved.getAuthorLogin()
         );
-        platformNotificationClient.publish("NEW_COMPLAINT", AuthoritiesConstants.ADMIN_COMMERCIAL, payload);
+        platformNotificationClient.publish("NEW_COMPLAINT", "*" + AuthoritiesConstants.ADMIN_COMMERCIAL + "*", payload);
 
         return complaintMapper.toDto(saved);
     }

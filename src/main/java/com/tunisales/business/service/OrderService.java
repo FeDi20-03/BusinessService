@@ -1,5 +1,6 @@
 package com.tunisales.business.service;
 
+import com.tunisales.business.client.PlatformNotificationClient;
 import com.tunisales.business.domain.Invoice;
 import com.tunisales.business.domain.InvoiceLine;
 import com.tunisales.business.domain.Order;
@@ -10,6 +11,7 @@ import com.tunisales.business.event.OrderValidatedEvent;
 import com.tunisales.business.repository.InvoiceLineRepository;
 import com.tunisales.business.repository.InvoiceRepository;
 import com.tunisales.business.repository.OrderRepository;
+import com.tunisales.business.security.AuthoritiesConstants;
 import com.tunisales.business.security.SecurityUtils;
 import com.tunisales.business.service.PaymentEligibilityService.EligibilityResult;
 import com.tunisales.business.service.dto.OrderDTO;
@@ -54,6 +56,8 @@ public class OrderService {
 
     private final ApplicationEventPublisher eventPublisher;
 
+    private final PlatformNotificationClient platformNotificationClient;
+
     public OrderService(
         OrderRepository orderRepository,
         OrderMapper orderMapper,
@@ -62,7 +66,8 @@ public class OrderService {
         SequenceService sequenceService,
         InvoiceRepository invoiceRepository,
         InvoiceLineRepository invoiceLineRepository,
-        ApplicationEventPublisher eventPublisher
+        ApplicationEventPublisher eventPublisher,
+        PlatformNotificationClient platformNotificationClient
     ) {
         this.orderRepository = orderRepository;
         this.orderMapper = orderMapper;
@@ -72,6 +77,7 @@ public class OrderService {
         this.invoiceRepository = invoiceRepository;
         this.invoiceLineRepository = invoiceLineRepository;
         this.eventPublisher = eventPublisher;
+        this.platformNotificationClient = platformNotificationClient;
     }
 
     /**
@@ -88,6 +94,8 @@ public class OrderService {
             order.getOrderLines().forEach(line -> line.setOrder(finalOrder));
         }
         order = orderRepository.save(order);
+        // Création : pas de statut précédent — notifie si la commande naît SUBMITTED.
+        maybeNotifyOrderPending(order, null);
         return orderMapper.toDto(order);
     }
 
@@ -99,8 +107,13 @@ public class OrderService {
      */
     public OrderDTO update(OrderDTO orderDTO) {
         log.debug("Request to update Order : {}", orderDTO);
+        // Statut courant en BD avant écrasement, pour détecter une transition vers SUBMITTED.
+        OrderStatus previous = orderDTO.getId() == null
+            ? null
+            : orderRepository.findById(orderDTO.getId()).map(Order::getStatus).orElse(null);
         Order order = orderMapper.toEntity(orderDTO);
         order = orderRepository.save(order);
+        maybeNotifyOrderPending(order, previous);
         return orderMapper.toDto(order);
     }
 
@@ -116,11 +129,12 @@ public class OrderService {
         return orderRepository
             .findById(orderDTO.getId())
             .map(existingOrder -> {
+                OrderStatus previous = existingOrder.getStatus();
                 orderMapper.partialUpdate(existingOrder, orderDTO);
-
-                return existingOrder;
+                Order saved = orderRepository.save(existingOrder);
+                maybeNotifyOrderPending(saved, previous);
+                return saved;
             })
-            .map(orderRepository::save)
             .map(orderMapper::toDto);
     }
 
@@ -164,7 +178,25 @@ public class OrderService {
      */
     public void delete(Long id) {
         log.debug("Request to delete Order : {}", id);
-        orderRepository.deleteById(id);
+        // Suppression logique (soft delete) : on marque la commande ET ses factures liées comme supprimées.
+        orderRepository
+            .findById(id)
+            .ifPresent(order -> {
+                ZonedDateTime now = ZonedDateTime.now();
+
+                // Cascade : soft delete des factures rattachées à la commande.
+                for (Invoice invoice : invoiceRepository.findByOrderId(order.getId())) {
+                    if (!Boolean.TRUE.equals(invoice.getIsDeleted())) {
+                        invoice.setIsDeleted(true);
+                        invoice.setUpdatedAt(now);
+                        invoiceRepository.save(invoice);
+                    }
+                }
+
+                order.setIsDeleted(true);
+                order.setUpdatedAt(now);
+                orderRepository.save(order);
+            });
     }
 
     // ------------------------------------------------------------------------
@@ -208,7 +240,50 @@ public class OrderService {
         order.setStatus(OrderStatus.SUBMITTED);
         order.setSubmittedAt(ZonedDateTime.now());
         order.setUpdatedAt(ZonedDateTime.now());
-        return orderMapper.toDto(orderRepository.save(order));
+        Order saved = orderRepository.save(order);
+
+        // Notifie les admins commerciaux qu'une commande est en attente de validation.
+        notifyOrderPending(saved);
+
+        return orderMapper.toDto(saved);
+    }
+
+    /** Rôles admin destinataires d'une commande en attente (accès à la page orders-pending). */
+    private static final String[] ORDER_PENDING_ROLES = {
+        AuthoritiesConstants.ADMIN_COMMERCIAL,
+        AuthoritiesConstants.ADMIN,
+        AuthoritiesConstants.ADMIN_SYSTEME,
+    };
+
+    /**
+     * Publie une notification {@code ORDER_PENDING} en diffusion vers les rôles
+     * administrateurs ({@code ROLE_ADMIN_COMMERCIAL}, {@code ROLE_ADMIN},
+     * {@code ROLE_ADMIN_SYSTEME}). Fire-and-forget : un échec de notification ne
+     * doit jamais faire échouer la soumission de la commande.
+     */
+    private void notifyOrderPending(Order order) {
+        String clientName = order.getClient() != null ? order.getClient().getName() : null;
+        String payloadJson = String.format(
+            "{\"orderId\":%d,\"clientName\":\"%s\"}",
+            order.getId(),
+            clientName == null ? "" : clientName.replace("\\", "\\\\").replace("\"", "\\\"")
+        );
+        for (String role : ORDER_PENDING_ROLES) {
+            platformNotificationClient.publish("ORDER_PENDING", "*" + role + "*", payloadJson);
+        }
+    }
+
+    /**
+     * Notifie « commande en attente » uniquement lors d'une transition <em>entrante</em>
+     * vers {@link OrderStatus#SUBMITTED} (depuis n'importe quel statut précédent),
+     * afin de couvrir aussi bien {@code submit()} que les mises à jour génériques
+     * ({@code save}/{@code update}/{@code partialUpdate}). Aucune notification si le
+     * statut était déjà SUBMITTED (pas de vrai changement).
+     */
+    private void maybeNotifyOrderPending(Order saved, OrderStatus previous) {
+        if (saved != null && saved.getStatus() == OrderStatus.SUBMITTED && previous != OrderStatus.SUBMITTED) {
+            notifyOrderPending(saved);
+        }
     }
 
     /**
@@ -241,7 +316,8 @@ public class OrderService {
     /**
      * Sub-step 2.4 — create and persist an Invoice and its InvoiceLines for the given order.
      * Numbers are produced by {@link SequenceService#nextInvoiceNumber()}, status is set to
-     * {@link InvoiceStatus#ISSUED}, and {@code unitPriceAtPurchase} captures the line price
+     * {@link InvoiceStatus#NOT_PAID} (invoice issued but not yet paid), and
+     * {@code unitPriceAtPurchase} captures the line price
      * at validation time (immutable snapshot used downstream by SalesReturn refunds).
      */
     private Invoice createInvoiceFor(Order order) {
@@ -257,7 +333,7 @@ public class OrderService {
             .amountHt(subtotal)
             .taxAmount(taxAmount)
             .amountTtc(total)
-            .status(InvoiceStatus.ISSUED)
+            .status(InvoiceStatus.NOT_PAID)
             .issueDate(now)
             .dueDate(now.plusDays(paymentDays))
             .isDeleted(false)

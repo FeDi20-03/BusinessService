@@ -249,6 +249,9 @@ jhipster:
 tunisales:
   platform:
     url: http://localhost:8082
+    # Shared secret sent as X-Internal-Token so PlatformService authenticates this
+    # service-to-service call (must match PlatformService tunisales.platform.internal-token).
+    internal-token: ${TUNISALES_INTERNAL_TOKEN:tunisales-internal-secret}
   inventory:
     url: http://localhost:8081
   business:

@@ -77,6 +77,7 @@ public class Invoice implements Serializable {
 
     @ManyToOne(optional = false)
     @NotNull
+    @org.hibernate.annotations.NotFound(action = org.hibernate.annotations.NotFoundAction.IGNORE)
     @JsonIgnoreProperties(value = { "contacts", "priceLists", "orders" }, allowSetters = true)
     private Client client;
 

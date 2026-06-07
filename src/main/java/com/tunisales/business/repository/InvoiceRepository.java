@@ -37,4 +37,9 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Long>, JpaSpec
 
     @Query("select invoice from Invoice invoice left join fetch invoice.client left join fetch invoice.order where invoice.id =:id")
     Optional<Invoice> findOneWithToOneRelationships(@Param("id") Long id);
+
+    @Query("select max(i.invoiceNumber) from Invoice i where i.invoiceNumber like concat(:prefix, '%')")
+    String findMaxNumberWithPrefix(@Param("prefix") String prefix);
+
+    List<Invoice> findByOrderId(Long orderId);
 }

@@ -1,7 +1,11 @@
 package com.tunisales.business.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
+import com.tunisales.business.repository.InvoiceRepository;
 import java.time.Year;
 import java.util.HashSet;
 import java.util.Set;
@@ -20,10 +24,14 @@ import org.junit.jupiter.api.Test;
 class SequenceServiceTest {
 
     private SequenceService service;
+    private InvoiceRepository invoiceRepository;
 
     @BeforeEach
     void setUp() {
-        service = new SequenceService();
+        invoiceRepository = mock(InvoiceRepository.class);
+        // No invoice persisted yet -> counters start at 1.
+        when(invoiceRepository.findMaxNumberWithPrefix(anyString())).thenReturn(null);
+        service = new SequenceService(invoiceRepository);
     }
 
     @Test
@@ -58,6 +66,17 @@ class SequenceServiceTest {
         String firstReturn = service.nextReturnNumber();
         int year = Year.now().getValue();
         assertThat(firstReturn).isEqualTo(String.format("RET-%d-00001", year));
+    }
+
+    @Test
+    void invoiceCounterResumesFromDatabaseMax() {
+        int year = Year.now().getValue();
+        // Simulate invoices already persisted up to ...00007 (e.g. after a restart).
+        when(invoiceRepository.findMaxNumberWithPrefix("INV-" + year + "-")).thenReturn(String.format("INV-%d-00007", year));
+
+        String next = service.nextInvoiceNumber();
+
+        assertThat(next).isEqualTo(String.format("INV-%d-00008", year));
     }
 
     @Test

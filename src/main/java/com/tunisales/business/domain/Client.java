@@ -11,12 +11,16 @@ import java.util.HashSet;
 import java.util.Set;
 import javax.persistence.*;
 import javax.validation.constraints.*;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.Where;
 
 /**
  * A Client.
  */
 @Entity
 @Table(name = "client")
+@SQLDelete(sql = "UPDATE client SET is_deleted = true WHERE id = ?")
+@Where(clause = "is_deleted = false")
 @SuppressWarnings("common-java:DuplicatedBlocks")
 public class Client implements Serializable {
 

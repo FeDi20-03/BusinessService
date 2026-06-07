@@ -4,6 +4,7 @@ import com.tunisales.business.domain.Invoice;
 import com.tunisales.business.repository.InvoiceRepository;
 import com.tunisales.business.service.dto.InvoiceDTO;
 import com.tunisales.business.service.mapper.InvoiceMapper;
+import java.time.ZonedDateTime;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -116,6 +117,13 @@ public class InvoiceService {
      */
     public void delete(Long id) {
         log.debug("Request to delete Invoice : {}", id);
-        invoiceRepository.deleteById(id);
+        // Suppression logique (soft delete) : on conserve la facture et ses lignes liées.
+        invoiceRepository
+            .findById(id)
+            .ifPresent(invoice -> {
+                invoice.setIsDeleted(true);
+                invoice.setUpdatedAt(ZonedDateTime.now());
+                invoiceRepository.save(invoice);
+            });
     }
 }

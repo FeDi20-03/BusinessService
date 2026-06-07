@@ -132,12 +132,26 @@ public class InvoiceQueryService extends QueryService<Invoice> {
                         buildSpecification(criteria.getClientId(), root -> root.join(Invoice_.client, JoinType.LEFT).get(Client_.id))
                     );
             }
+            if (criteria.getClientName() != null && criteria.getClientName().getContains() != null) {
+                String pattern = "%" + criteria.getClientName().getContains().toLowerCase() + "%";
+                specification =
+                    specification.and((root, query, cb) ->
+                        cb.like(cb.lower(root.join(Invoice_.client, JoinType.LEFT).get(Client_.name)), pattern)
+                    );
+            }
             if (criteria.getOrderId() != null) {
                 specification =
                     specification.and(
                         buildSpecification(criteria.getOrderId(), root -> root.join(Invoice_.order, JoinType.LEFT).get(Order_.id))
                     );
             }
+        }
+        // Masquer les factures dont le client a été supprimé (soft-delete)
+        specification =
+            specification.and((root, query, cb) -> cb.isFalse(root.join(Invoice_.client, JoinType.INNER).get(Client_.isDeleted)));
+        // N'afficher que les factures non supprimées (soft-delete), sauf filtre explicite
+        if (criteria == null || criteria.getIsDeleted() == null) {
+            specification = specification.and((root, query, cb) -> cb.isFalse(root.get(Invoice_.isDeleted)));
         }
         return specification;
     }
